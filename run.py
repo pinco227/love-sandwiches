@@ -10,11 +10,17 @@ CREDS = Credentials.from_service_account_file('creds.json')
 SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('love_sandwiches')
+SALES = SHEET.worksheet('sales')
+SURPLUS = SHEET.worksheet('surplus')
+STOCK = SHEET.worksheet('stock')
 
 
 def get_sales_data():
     """
-    Get sales figures input from the server
+    Get sales figures input from the user.
+    Run a while loop to collect a valid string of data from the user
+    via the terminal, which must pe a string of 6 numbers separated
+    by comma. The loop will repeatedly request data, until is valid.
     """
 
     while True:
@@ -29,6 +35,8 @@ def get_sales_data():
         if validate_data(sales_data):
             print("Data is valid!")
             break
+
+    return validate_data(sales_data)
 
 
 def validate_data(values):
@@ -48,7 +56,18 @@ def validate_data(values):
         print(f"Invalid data: {e}, please try again.\n")
         return False
 
-    return True
+    return [int(value) for value in values]
 
 
-get_sales_data()
+def update_worksheet(sheet, data):
+    """
+    Update sales worksheet, add new row with the list data provided.
+    """
+
+    print("Updating sales worksheet...\n")
+    sheet.append_row(data)
+    print("Sales worksheet updated successfully.\n")
+
+
+data = get_sales_data()
+update_worksheet(SALES, data)
