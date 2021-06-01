@@ -69,5 +69,13 @@ def update_worksheet(sheet, data):
     print("Sales worksheet updated successfully.\n")
 
 
-data = get_sales_data()
-update_worksheet(SALES, data)
+def main():
+    """
+        Run all program functions
+    """
+    data = get_sales_data()
+    update_worksheet(SALES, data)
+
+
+print("Welcome to Love Sandwiches Data Automation\n")
+main()
