@@ -1,13 +1,16 @@
+from pprint import pprint
 import gspread
 from google.oauth2.service_account import Credentials
-from pprint import pprint
+import json
 
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/drive"
 ]
-CREDS = Credentials.from_service_account_file('creds.json')
+
+creds = json.load(open('creds.json'))
+CREDS = Credentials.from_service_account_info(creds)
 SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('love_sandwiches')
@@ -121,17 +124,32 @@ def calculate_stock_data(data):
     return new_stock_data
 
 
+def get_stock_values(data):
+    """
+    Returns stock headings and last row values in a dictionary
+    """
+    headings = SHEET.worksheet('stock').row_values(1)
+    # return {headings[i]: data[i] for i in range(len(headings))}
+    return {heading: data for heading, data in zip(headings, data)}
+
+
 def main():
     """
         Run all program functions
     """
-    data = get_sales_data()
-    update_worksheet('sales', data)
-    surplus = calculate_surplus_data(data)
+    sales_data = get_sales_data()
+    update_worksheet('sales', sales_data)
+
+    surplus = calculate_surplus_data(sales_data)
     update_worksheet('surplus', surplus)
+
     sales_columns = get_last_5_entries_sales()
     stock_data = calculate_stock_data(sales_columns)
     update_worksheet('stock', stock_data)
+
+    stock_values = get_stock_values(stock_data)
+    print("Make this stock for next market:")
+    pprint(stock_values)
 
 
 print("Welcome to Love Sandwiches Data Automation\n")
